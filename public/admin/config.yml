@@ -7,7 +7,7 @@ backend:
   branch: main
   # 登录方式默认是「使用 Token 登录」（GitHub Personal Access Token，需 Contents 读写权限）。
   # 如果希望点按钮直接走 GitHub 授权登录，按 docs/github-login.md 配置一次认证服务，再取消下一行注释并填入你的认证地址。
-  base_url: https://sveltia-cms-auth.suzuka-nagami.workers.dev
+  base_url: https://sveltia-cms-auth.3508493750.workers.dev
 
 # 全局媒体目录（Sveltia 的必填项，实际不会生效：「作品」集合已在下方单独设置为作品文件夹内储存）
 media_folder: src/content/works
