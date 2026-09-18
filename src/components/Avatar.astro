@@ -1,0 +1,21 @@
+---
+import { Image } from 'astro:assets';
+import { site } from '../data/site';
+import { withBase } from '../utils/url';
+import fallback from '../assets/avatar.png';
+
+// 头像：后台「站点设置」里上传的图片优先，否则使用主题自带的 src/assets/avatar.png
+interface Props {
+  class: string;
+  widths?: number[];
+}
+const { class: className, widths = [256] } = Astro.props;
+---
+
+{
+  site.avatar ? (
+    <img src={withBase(site.avatar)} alt={site.artist} class={className} />
+  ) : (
+    <Image src={fallback} alt={site.artist} class={className} widths={widths} />
+  )
+}

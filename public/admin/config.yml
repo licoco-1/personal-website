@@ -1,0 +1,109 @@
+# 管理后台配置（Sveltia CMS）
+# 文档：https://sveltiacms.app/
+
+backend:
+  name: github
+  repo: licoco-1/personal-website # ← 部署时改成「你的用户名/站点仓库名」
+  branch: main
+  # 登录方式默认是「使用 Token 登录」（GitHub Personal Access Token，需 Contents 读写权限）。
+  # 如果希望点按钮直接走 GitHub 授权登录，按 docs/github-login.md 配置一次认证服务，再取消下一行注释并填入你的认证地址。
+  # base_url: https://your-auth.example.workers.dev
+
+# 全局媒体目录（Sveltia 的必填项，实际不会生效：「作品」集合已在下方单独设置为作品文件夹内储存）
+media_folder: src/content/works
+
+# 图片储存：默认上传到仓库里作品自己的文件夹（src/content/works/<作品>/）。
+# 图片较多时推荐改用 Cloudflare R2（免流量费），取消下面的注释并填写：
+# media_libraries:
+#   cloudflare_r2:
+#     access_key_id: <64 位十六进制 Access Key ID>
+#     bucket: <R2 桶名>
+#     account_id: <Cloudflare 账户 ID>
+#     public_url: https://<公开访问域名，如 pub-xxx.r2.dev 或自定义域名>
+#     prefix: works/
+# Secret Access Key 不要写在这里；首次在后台打开媒体库时按提示输入，只会保存在你自己的浏览器中。
+
+collections:
+  - name: works
+    label: 作品
+    label_singular: 作品
+    description: 每件作品一个文件夹，支持 1~N 张图；第一张图会作为封面。
+    icon: palette
+    folder: src/content/works
+    path: '{{slug}}/index'
+    # 置空表示图片保存在作品自己的文件夹里，与 index.md 同级
+    media_folder: ''
+    public_folder: ''
+    preview_path: /works/{{dirname}}
+    summary: '{{title}}（{{date}}）'
+    fields:
+      - { label: 标题, name: title, widget: string }
+      - label: 发布日期
+        name: date
+        widget: datetime
+        format: 'YYYY-MM-DD'
+        date_format: 'YYYY-MM-DD'
+        time_format: false
+      - { label: 简介, name: description, widget: text, required: false }
+      - label: 标签
+        name: tags
+        widget: list
+        required: false
+        field: { label: 标签, name: tag, widget: string }
+      - label: 图片
+        label_singular: 图片
+        name: images
+        widget: list
+        hint: 第一张图会作为封面；多张图时读者可以在详情页点击「全部看完」逐张浏览。也可以选择「填入链接」直接使用外部直链。
+        field: { label: 图片, name: image, widget: image, choose_url: true }
+      - { label: 正文（可选）, name: body, widget: markdown, required: false }
+
+singletons:
+  - name: settings
+    label: 站点设置
+    icon: settings
+    file: src/data/site.yml
+    fields:
+      - { label: 站点标题, name: title, widget: string }
+      - label: 主视觉标题（逐行）
+        name: heroTitleLines
+        widget: list
+        field: { label: 行, name: line, widget: string }
+      - { label: 画师昵称, name: artist, widget: string }
+      - { label: 账号 ID, name: handle, widget: string }
+      - label: 头像
+        name: avatar
+        widget: image
+        required: false
+        # 开头必须有斜杠（表示从仓库根目录算起）；少了斜杠会被后台当成「跟随内容文件的相对目录」，头像和图标两个字段会被视为同一目录，同名图片会误报冲突
+        media_folder: /public/uploads/avatar
+        public_folder: /uploads/avatar
+        hint: 留空则使用主题自带头像（src/assets/avatar.png）；旧头像会在保存后自动清理
+      - label: 标签页图标
+        name: favicon
+        widget: image
+        required: false
+        media_folder: /public/uploads/favicon
+        public_folder: /uploads/favicon
+        hint: 留空则使用 public/favicon.svg 或 favicon.png；旧图标会在保存后自动清理
+      - { label: 一句话简介, name: bio, widget: text, required: false }
+      - { label: 关于页介绍, name: aboutIntro, widget: text, required: false, hint: 显示在 ABOUT 页面的自我介绍，每段一行 }
+      - { label: 邮箱, name: email, widget: string, required: false, hint: 留空则不显示 }
+      - { label: 赞助页链接, name: supportUrl, widget: string, required: false, hint: FANBOX、爱发电等页面的完整网址，留空则不显示 }
+      - { label: 主视觉轮播数量, name: heroCount, widget: number, value_type: int, min: 1, max: 10 }
+      - label: 导航菜单
+        name: nav
+        widget: list
+        fields:
+          - { label: 文字, name: label, widget: string }
+          - { label: 地址, name: href, widget: string, hint: 站内路径，例如 / 或 /about/ }
+      - label: 社交链接
+        name: links
+        widget: list
+        fields:
+          - { label: 名称, name: label, widget: string }
+          - { label: 地址, name: href, widget: string }
+          - label: 图标
+            name: icon
+            widget: select
+            options: [x, pixiv, instagram, mail]

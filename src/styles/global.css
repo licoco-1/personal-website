@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+/* 设计变量：整站配色集中在这里，改主色（--accent）即可全局生效 */
+:root {
+  --paper: #ffffff;
+  --card: #f5f5f5;
+  --ink: #333333;
+  --muted: #999999;
+  --line: #e0e0e0;
+  --accent: #75b1d6;
+  --accent-ink: #4d93c0;
+  --dark-bg: #000000;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-dark-bg: var(--dark-bg);
+  --font-sans: "Lato", "Avenir Next", "PingFang SC", "Hiragino Sans GB",
+    "Noto Sans SC", "Noto Sans JP", "Microsoft YaHei", "Helvetica Neue",
+    Helvetica, Arial, sans-serif;
+}
+
+body {
+  @apply bg-paper font-sans text-ink antialiased;
+}
+
+/* 大写细字区块标题（PROFILE / WORK），下方带短横线 */
+.section-heading {
+  @apply text-4xl font-extralight tracking-[0.25em] text-ink md:text-5xl;
+}
+.section-heading::after {
+  content: "";
+  display: block;
+  width: 1.5rem;
+  margin-top: 0.9rem;
+  border-bottom: 2px solid currentColor;
+  opacity: 0.35;
+}

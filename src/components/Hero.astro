@@ -1,0 +1,153 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { site } from '../data/site';
+import { withBase } from '../utils/url';
+import LinkIcon from './LinkIcon.astro';
+import WorkImage from './WorkImage.astro';
+
+// 首页主视觉：黑底全宽区域，左侧为站点标题与社交链接，中间为方形轮播（两侧露出相邻作品），右侧为缩略图栏
+interface Props {
+  works: CollectionEntry<'works'>[];
+}
+const { works } = Astro.props;
+---
+
+<section class="bg-dark-bg pt-16" aria-label="主视觉">
+  <div class="mx-auto flex w-full max-w-[1400px] items-center gap-8 px-5 pb-10 lg:gap-12">
+    <!-- 左：标题块 -->
+    <div class="hidden w-[240px] shrink-0 flex-col justify-center self-stretch border-r border-white/20 pr-10 lg:flex">
+      <h1 class="text-[28px] leading-[2] font-light tracking-[0.35em] text-white">
+        {site.heroTitleLines.map((line) => <span class="block">{line}</span>)}
+      </h1>
+      <div class="mt-7 flex gap-4 text-white/85">
+        {
+          site.links.map((l) => (
+            <a href={l.href} target="_blank" rel="noopener" aria-label={l.label} class="transition hover:text-accent">
+              <LinkIcon name={l.icon} />
+            </a>
+          ))
+        }
+      </div>
+    </div>
+
+    <!-- 中：轮播 -->
+    <div class="relative min-w-0 flex-1 overflow-hidden" id="hero-viewport">
+      <div id="hero-track" class="flex items-center transition-transform duration-700 ease-out">
+        {
+          works.map((work, i) => (
+            <a
+              href={withBase(`/works/${work.id}/`)}
+              class="hero-slide w-[78%] flex-none px-2 sm:w-[56%]"
+              data-index={i}
+              aria-label={work.data.title}
+            >
+              <div class="aspect-square w-full overflow-hidden">
+                <WorkImage
+                  src={work.data.images[0]}
+                  alt={work.data.title}
+                  widths={[900, 1400]}
+                  sizes="(min-width: 1024px) 45vw, 78vw"
+                  class="h-full w-full object-cover"
+                  loading={i < 2 ? 'eager' : 'lazy'}
+                />
+              </div>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+
+    <!-- 右：竖排缩略图 -->
+    <div class="hidden w-[150px] shrink-0 flex-col gap-3 md:flex" id="hero-thumbs">
+      {
+        works.map((work, i) => (
+          <button
+            class="hero-thumb aspect-[4/3] w-full cursor-pointer overflow-hidden opacity-50 transition hover:opacity-90"
+            data-index={i}
+            aria-label={work.data.title}
+          >
+            <WorkImage
+              src={work.data.images[0]}
+              alt=""
+              widths={[300]}
+              sizes="150px"
+              class="h-full w-full object-cover"
+            />
+          </button>
+        ))
+      }
+    </div>
+  </div>
+
+  <!-- 移动端标题 + 横排缩略图 -->
+  <div class="px-5 pb-8 lg:hidden">
+    <h1 class="text-2xl leading-[1.9] font-light tracking-[0.3em] text-white">
+      {site.heroTitleLines.join(' ')}
+    </h1>
+    <div class="mt-5 flex gap-2 md:hidden" id="hero-thumbs-sp">
+      {
+        works.map((work, i) => (
+          <button
+            class="hero-thumb aspect-[4/3] flex-1 cursor-pointer overflow-hidden opacity-50"
+            data-index={i}
+            aria-label={work.data.title}
+          >
+            <WorkImage src={work.data.images[0]} alt="" widths={[160]} sizes="20vw" class="h-full w-full object-cover" />
+          </button>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  const viewport = document.getElementById('hero-viewport');
+  const track = document.getElementById('hero-track');
+  if (viewport && track) {
+    const slides = [...track.querySelectorAll<HTMLElement>('.hero-slide')];
+    const thumbs = [...document.querySelectorAll<HTMLElement>('.hero-thumb')];
+    const n = slides.length;
+    let current = 0;
+
+    // 按当前作品计算轮播轨道的水平位移，使当前作品居中显示
+    function updatePosition() {
+      const slideW = slides[0].offsetWidth;
+      const offset = viewport.clientWidth / 2 - slideW / 2 - current * slideW;
+      track.style.transform = `translateX(${offset}px)`;
+    }
+
+    // 高亮当前作品，压低其余幻灯片与缩略图的透明度
+    function highlight() {
+      slides.forEach((s, i) => {
+        const active = i === current;
+        s.style.transition = 'opacity .7s';
+        s.style.opacity = active ? '1' : '0.45';
+        s.style.pointerEvents = active ? 'auto' : 'none';
+      });
+      thumbs.forEach((t, i) => {
+        t.style.opacity = i === current ? '1' : '0.5';
+        t.style.outline = i === current ? '2px solid rgba(255,255,255,.85)' : 'none';
+      });
+    }
+
+    // 切换到第 i 张，首尾循环
+    function goTo(i: number) {
+      current = ((i % n) + n) % n;
+      updatePosition();
+      highlight();
+    }
+
+    // 每 4.5 秒自动切换到下一张，点击缩略图后重新开始计时
+    let timer = setInterval(() => goTo(current + 1), 4500);
+    thumbs.forEach((t, i) =>
+      t.addEventListener('click', () => {
+        clearInterval(timer);
+        goTo(i);
+        timer = setInterval(() => goTo(current + 1), 4500);
+      }),
+    );
+    window.addEventListener('resize', updatePosition);
+    updatePosition();
+    highlight();
+  }
+</script>

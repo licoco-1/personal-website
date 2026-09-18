@@ -1,0 +1,26 @@
+---
+import { site } from '../data/site';
+import { withBase } from '../utils/url';
+
+// 全局导航：半透明白色悬浮条，左侧站点标题，右侧大写菜单
+---
+
+<header class="fixed inset-x-0 top-0 z-40 bg-white/60 backdrop-blur-sm">
+  <div class="mx-auto flex w-full max-w-[1170px] items-baseline justify-between px-4">
+    <a href={withBase('/')} class="py-3.5 text-xl font-normal tracking-wide text-ink">
+      {site.title}
+    </a>
+    <nav class="flex">
+      {
+        site.nav.map((n) => (
+          <a
+            href={withBase(n.href)}
+            class="px-5 py-4 text-sm tracking-[0.15em] text-ink uppercase transition hover:text-accent-ink"
+          >
+            {n.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</header>

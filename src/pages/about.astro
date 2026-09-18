@@ -1,0 +1,65 @@
+---
+import Base from '../layouts/Base.astro';
+import NavBar from '../components/NavBar.astro';
+import LinkIcon from '../components/LinkIcon.astro';
+import Avatar from '../components/Avatar.astro';
+import { site } from '../data/site';
+---
+
+<Base title="ABOUT">
+  <NavBar />
+
+  <!-- 关于页：窄版心 -->
+  <main class="mx-auto w-full max-w-[700px] px-4 pt-28 pb-16">
+    <h1 class="section-heading">ABOUT</h1>
+
+    <div class="mt-10 flex items-center gap-5">
+      <Avatar class="size-24 rounded-full object-cover" widths={[192, 384]} />
+      <div>
+        <p class="text-lg font-bold tracking-wide">{site.artist}</p>
+        <p class="mt-1 text-sm text-muted">@{site.handle}</p>
+      </div>
+    </div>
+
+    <div class="mt-8 space-y-4 text-sm leading-[1.9] text-ink/85">
+      {site.aboutIntro.split(/\n+/).filter(Boolean).map((line) => <p>{line}</p>)}
+    </div>
+
+    {
+      (site.email || site.supportUrl) && (
+        <div class="mt-10 space-y-3 border-t border-line pt-8 text-sm">
+          {site.email && (
+            <p>
+              ✉
+              <a href={`mailto:${site.email}`} class="text-accent-ink underline underline-offset-4">{site.email}</a>
+            </p>
+          )}
+          {site.supportUrl && (
+            <p>
+              ♥
+              <a href={site.supportUrl} target="_blank" rel="noopener" class="text-accent-ink underline underline-offset-4">
+                在赞助页支持我
+              </a>
+            </p>
+          )}
+        </div>
+      )
+    }
+
+    <div class="mt-8 flex gap-4 text-muted">
+      {
+        site.links.map((l) => (
+          <a
+            href={l.href}
+            target="_blank"
+            rel="noopener"
+            aria-label={l.label}
+            class="transition hover:text-accent"
+          >
+            <LinkIcon name={l.icon} />
+          </a>
+        ))
+      }
+    </div>
+  </main>
+</Base>

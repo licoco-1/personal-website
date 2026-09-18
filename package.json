@@ -1,0 +1,22 @@
+{
+  "name": "astro-theme-bakery",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "author": "永見涼花 <https://suzuka.cc>",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^5.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/js-yaml": "^4.0.9",
+    "js-yaml": "^4.1.0",
+    "tailwindcss": "^4.0.0"
+  }
+}

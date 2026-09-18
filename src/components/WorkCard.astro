@@ -1,0 +1,53 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { withBase } from '../utils/url';
+import WorkImage from './WorkImage.astro';
+
+// 作品卡片：浅灰底卡片，封面 + 标题/简介 + 日期与固定链接页脚
+interface Props {
+  work: CollectionEntry<'works'>;
+}
+const { work } = Astro.props;
+const date = work.data.date.toISOString().slice(0, 10);
+---
+
+<article class="mb-6 break-inside-avoid">
+  <div class="bg-card p-2.5">
+    <a href={withBase(`/works/${work.id}/`)} class="block overflow-hidden">
+      <WorkImage
+        src={work.data.images[0]}
+        alt={work.data.title}
+        widths={[420, 840]}
+        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+        class="h-auto w-full transition duration-300 hover:opacity-90"
+      />
+    </a>
+    <div class="px-1.5 pt-2.5 pb-1.5">
+      <h2 class="text-base leading-snug font-normal">
+        <a href={withBase(`/works/${work.id}/`)} class="transition hover:text-accent-ink">
+          {work.data.title}
+        </a>
+        {
+          work.data.images.length > 1 && (
+            <span class="ml-1.5 text-xs text-muted">（{work.data.images.length} 枚）</span>
+          )
+        }
+      </h2>
+      {
+        work.data.description && (
+          <p class="mt-1.5 text-[13px] leading-relaxed text-ink/75">{work.data.description}</p>
+        )
+      }
+      <div class="mt-2.5 flex items-center justify-between border-t border-line pt-2 text-xs text-muted">
+        <time datetime={date}>{date}</time>
+        <a href={withBase(`/works/${work.id}/`)} class="inline-flex items-center gap-1 transition hover:text-accent-ink">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="size-3">
+            <path d="M10 14a5 5 0 0 0 7.1 0l3-3a5 5 0 0 0-7.1-7.1l-1.5 1.5" />
+            <path d="M14 10a5 5 0 0 0-7.1 0l-3 3a5 5 0 0 0 7.1 7.1l1.5-1.5" />
+          </svg>
+          Permalink
+        </a>
+      </div>
+    </div>
+  </div>
+</article>

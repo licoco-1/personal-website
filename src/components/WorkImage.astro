@@ -1,0 +1,30 @@
+---
+import { Image } from 'astro:assets';
+
+// 统一的图片输出：本地图片走构建优化，远程直链按原样引用
+interface Props {
+  src: ImageMetadata | string;
+  alt: string;
+  widths?: number[];
+  sizes?: string;
+  class?: string;
+  loading?: 'eager' | 'lazy';
+}
+
+const {
+  src,
+  alt,
+  widths = [800, 1400],
+  sizes = '100vw',
+  class: cls,
+  loading = 'lazy',
+} = Astro.props;
+---
+
+{
+  typeof src === 'string' ? (
+    <img src={src} alt={alt} class={cls} loading={loading} decoding="async" />
+  ) : (
+    <Image src={src} alt={alt} widths={widths} sizes={sizes} class={cls} loading={loading} />
+  )
+}

@@ -1,0 +1,226 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import NavBar from '../../components/NavBar.astro';
+import WorkImage from '../../components/WorkImage.astro';
+import { site } from '../../data/site';
+import { withBase } from '../../utils/url';
+import Avatar from '../../components/Avatar.astro';
+import type { CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const works = (await getCollection('works')).sort(
+    (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+  );
+  return works.map((work, i) => ({
+    params: { slug: work.id },
+    props: {
+      work,
+      newer: works[i - 1] ?? null,
+      older: works[i + 1] ?? null,
+      others: works.filter((w) => w.id !== work.id).slice(0, 4),
+    },
+  }));
+}
+
+interface Props {
+  work: CollectionEntry<'works'>;
+  newer: CollectionEntry<'works'> | null;
+  older: CollectionEntry<'works'> | null;
+  others: CollectionEntry<'works'>[];
+}
+const { work, newer, older, others } = Astro.props;
+const { Content } = await render(work);
+const date = work.data.date.toISOString().slice(0, 10).replaceAll('-', '/');
+const [first, ...rest] = work.data.images;
+const count = work.data.images.length;
+// 多张图时启用折叠：首图限高 + 按钮，其余图展开前隐藏
+const collapsible = rest.length > 0;
+const srcOf = (img: (typeof work.data.images)[number]) =>
+  typeof img === 'string' ? img : img.src;
+
+// 标签胶囊底色轮换
+const chipColors = ['#ffe3cf', '#ffd9e3', '#fdf2c0', '#e6e6ee'];
+---
+
+<Base title={work.data.title} description={work.data.description}>
+  <NavBar />
+
+  <main class="mx-auto w-full max-w-[1170px] px-4 pt-24 pb-16">
+    <div class="lg:flex lg:gap-10">
+      <!-- 左列：图片 + 导航 + 作品信息 -->
+      <div class="min-w-0 lg:flex-1">
+        <div class="space-y-5">
+          <!-- 首图 -->
+          <div
+            class:list={[
+              'first-wrap relative mx-auto max-w-[1024px]',
+              collapsible && 'max-h-[75vh] overflow-hidden',
+            ]}
+          >
+            <a href={srcOf(first)} target="_blank" rel="noopener" class="block">
+              <WorkImage
+                src={first}
+                alt={`${work.data.title} - 1`}
+                widths={[800, 1400]}
+                sizes="(min-width: 1024px) 60vw, 100vw"
+                class="mx-auto h-auto w-full"
+                loading="eager"
+              />
+            </a>
+            {
+              collapsible && (
+                <>
+                  <div class="first-mask pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-white/95 to-transparent" />
+                  <button class="first-btn absolute bottom-5 left-1/2 flex -translate-x-1/2 cursor-pointer items-center gap-2 rounded-full bg-white/90 px-5 py-2 text-sm text-ink shadow-md backdrop-blur-sm transition hover:bg-white">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="size-4">
+                      <rect x="4" y="4" width="16" height="16" rx="2" />
+                      <path d="M4 10h16M10 4v16" />
+                    </svg>
+                    {count}枚 · 全部看完
+                  </button>
+                </>
+              )
+            }
+          </div>
+
+          <!-- 其余图片：点击「全部看完」后显示 -->
+          {
+            collapsible && (
+              <div class="rest-wrap hidden space-y-5">
+                {rest.map((img, i) => (
+                  <a href={srcOf(img)} target="_blank" rel="noopener" class="mx-auto block max-w-[1024px]">
+                    <WorkImage
+                      src={img}
+                      alt={`${work.data.title} - ${i + 2}`}
+                      widths={[800, 1400]}
+                      sizes="(min-width: 1024px) 60vw, 100vw"
+                      class="h-auto w-full"
+                    />
+                  </a>
+                ))}
+              </div>
+            )
+          }
+        </div>
+
+        <!-- 上一篇 / 返回列表 / 下一篇 -->
+        <nav class="mt-10 flex items-center justify-between gap-4 rounded-2xl border border-[#96a5bf] px-6 py-4 text-sm">
+          <span class="min-w-0 flex-1 truncate text-left">
+            {
+              older && (
+                <a href={withBase(`/works/${older.id}/`)} class="transition hover:text-accent-ink">
+                  ← 上一篇
+                </a>
+              )
+            }
+          </span>
+          <a href={withBase('/')} class="shrink-0 font-medium transition hover:text-accent-ink">返回作品列表</a>
+          <span class="min-w-0 flex-1 truncate text-right">
+            {
+              newer && (
+                <a href={withBase(`/works/${newer.id}/`)} class="transition hover:text-accent-ink">
+                  下一篇 →
+                </a>
+              )
+            }
+          </span>
+        </nav>
+
+        <!-- 作品信息 -->
+        <section class="mt-12">
+          <h1 class="text-2xl font-normal tracking-[0.15em]">{work.data.title}</h1>
+
+          <div class="mt-5 space-y-3 text-sm leading-[1.8] text-ink/80 [&_p]:mb-3">
+            {work.data.description && <p>{work.data.description}</p>}
+            <Content />
+          </div>
+
+          <time class="mt-3 block text-sm text-ink/70" datetime={date}>{date}</time>
+
+          {
+            work.data.tags.length > 0 && (
+              <div class="mt-4 flex flex-wrap gap-2">
+                {work.data.tags.map((tag, i) => (
+                  <span
+                    class="rounded-full px-3 py-1 text-xs text-ink/70"
+                    style={`background-color: ${chipColors[i % chipColors.length]}`}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )
+          }
+        </section>
+      </div>
+
+      <!-- 右列：画师卡 + 其他作品 -->
+      <aside class="mt-12 shrink-0 lg:mt-0 lg:w-[300px]">
+        <div class="space-y-6 lg:sticky lg:top-24">
+          <div class="bg-card p-5">
+            <div class="flex items-center gap-3">
+              <Avatar class="size-12 rounded-full object-cover" widths={[96, 192]} />
+              <div>
+                <p class="font-bold">{site.artist}</p>
+                <p class="text-xs text-muted">@{site.handle}</p>
+              </div>
+            </div>
+            <p class="mt-3 text-xs leading-relaxed text-ink/75">{site.bio}</p>
+            <a href={withBase('/about/')} class="mt-3 inline-block text-xs text-accent-ink underline underline-offset-4">
+              关于画师 →
+            </a>
+          </div>
+
+          <div>
+            <h2 class="text-sm tracking-[0.2em] text-muted">其他作品</h2>
+            <div class="mt-3 grid grid-cols-2 gap-2">
+              {
+                others.map((w) => (
+                  <a href={withBase(`/works/${w.id}/`)} class="group block overflow-hidden">
+                    <WorkImage
+                      src={w.data.images[0]}
+                      alt={w.data.title}
+                      widths={[300]}
+                      sizes="150px"
+                      class="aspect-square w-full object-cover transition duration-300 group-hover:scale-105"
+                    />
+                  </a>
+                ))
+              }
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const wrap = document.querySelector<HTMLElement>('.first-wrap');
+    const btn = document.querySelector<HTMLElement>('.first-btn');
+    const mask = document.querySelector<HTMLElement>('.first-mask');
+    const restBox = document.querySelector<HTMLElement>('.rest-wrap');
+    const img = wrap?.querySelector('img');
+
+    function expand() {
+      wrap?.classList.remove('max-h-[75vh]', 'overflow-hidden');
+      btn?.remove();
+      mask?.remove();
+      restBox?.classList.remove('hidden');
+    }
+
+    if (wrap && btn && img) {
+      // 首图本身不足一屏高时无需折叠，直接展示全部
+      const expandIfShort = () => {
+        const box = wrap.getBoundingClientRect();
+        if (img.naturalHeight * (box.width / img.naturalWidth) <= window.innerHeight * 0.75) {
+          expand();
+        }
+      };
+      if (img.complete && img.naturalHeight > 0) expandIfShort();
+      else img.addEventListener('load', expandIfShort);
+      btn.addEventListener('click', expand);
+    }
+  </script>
+</Base>

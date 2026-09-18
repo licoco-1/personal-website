@@ -1,0 +1,55 @@
+---
+import fs from 'node:fs';
+import '../styles/global.css';
+import { site } from '../data/site';
+import { withBase } from '../utils/url';
+
+// 全站页面骨架：引入全局样式，输出 <head> 元信息、页面插槽与页脚
+interface Props {
+  title?: string;
+  description?: string;
+}
+const { title, description = site.bio } = Astro.props;
+const fullTitle = title ? `${title} · ${site.title}` : site.title;
+
+// 标签页图标：后台上传的优先，否则使用 public/ 下的 favicon.svg 或 favicon.png（两者都有时用 SVG）
+const faviconTypes: Record<string, string> = {
+  svg: 'image/svg+xml',
+  png: 'image/png',
+  ico: 'image/x-icon',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  webp: 'image/webp',
+};
+const fileFavicon = fs.existsSync(new URL('../../public/favicon.svg', import.meta.url))
+  ? '/favicon.svg'
+  : '/favicon.png';
+const faviconPath = site.favicon || fileFavicon;
+const faviconExt = faviconPath.slice(faviconPath.lastIndexOf('.') + 1).toLowerCase();
+const faviconType = faviconTypes[faviconExt] ?? 'image/png';
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <link rel="icon" type={faviconType} href={withBase(faviconPath)} />
+  </head>
+  <body class="flex min-h-screen flex-col">
+    <slot />
+
+    <footer class="mt-auto bg-dark-bg py-7 text-center text-xs tracking-[0.2em] text-white/70">
+      © {site.title} · Powered by
+      <a href="https://astro.build" target="_blank" rel="noopener" class="underline underline-offset-2 transition hover:text-white">Astro</a>
+      · Theme Bakery by
+      <a href="https://suzuka.cc" target="_blank" rel="noopener" class="underline underline-offset-2 transition hover:text-white">永見涼花</a>
+      ·
+      <a href="https://github.com/SweetenedSuzuka" target="_blank" rel="noopener" class="underline underline-offset-2 transition hover:text-white">GitHub</a>
+    </footer>
+  </body>
+</html>
