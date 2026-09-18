@@ -5,11 +5,10 @@ artist: 梨可可
 handle: 梨可可OCOC
 avatar: /uploads/avatar/头像.jpg
 favicon: /uploads/avatar/头像.jpg
-bio: 这里填写一句话简介，例如创作方向、接稿范围、更新频率等。
+bio: 想把有趣的创作分享给大家
 aboutIntro: |-
-  这里填写画师的自我介绍：创作方向、常用工具、接稿范围与流程等。
-  工作联系请通过邮件沟通；如果喜欢这里的作品，也欢迎在赞助页支持创作。
-  本站的每一件作品都可以点进详情页，按顺序看完该作品的全部图片。
+  想把有趣的创作分享给大家
+  目前正在被极端群体通缉攻击，为防止再次失联，请添加粉丝群：839285530
 email: ''
 supportUrl: ''
 heroCount: 5
@@ -19,6 +18,6 @@ nav:
   - label: ABOUT
     href: /about/
 links:
-  - label: pixiv
-    href: https://www.pixiv.net/
+  - label: 哔哩哔哩
+    href: https://space.bilibili.com/1238673845
     icon: pixiv
